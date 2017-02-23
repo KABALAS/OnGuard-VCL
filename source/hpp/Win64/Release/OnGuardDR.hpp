@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'OnGuardDR.dpk' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'OnGuardDR.dpk' rev: 32.00 (Windows)
 
 #ifndef OnguarddrHPP
 #define OnguarddrHPP
@@ -118,6 +118,11 @@
 #include <System.MaskUtils.hpp>	// (rtl)
 #include <Vcl.Mask.hpp>	// (vcl)
 #include <Vcl.TabNotBk.hpp>	// (vclx)
+// SO_SFX: 250
+// PRG_EXT: .bpl
+// BPI_DIR: C:\Users\Public\Documents\Embarcadero\Studio\19.0\Dcp\Win64
+// OBJ_DIR: C:\Users\Public\Documents\Embarcadero\Studio\19.0\Dcp\Win64
+// OBJ_EXT: .o
 
 //-- user supplied -----------------------------------------------------------
 
