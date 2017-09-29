@@ -73,6 +73,8 @@ type
           HiHi: Byte);
   end;
 
+  TRegAccess = (raNormal, ra32Like64, ra64Like32);
+
 {$REGION 'moved from onguard.pas'}
 // moved from onguard.pas
 const
@@ -200,7 +202,7 @@ procedure GenerateTMDKeyPrim(var Key; KeySize : Cardinal; const Str : string);
 procedure GenerateMD5KeyPrim(var Key: TKey; const Str : string);
 
 {modifier routines}
-function CreateMachineID(MachineInfo: TEsMachineInfoSet; Ansi: Boolean = True; Win32AsWin64: Boolean = False): Integer;   {!!.05}
+function CreateMachineID(MachineInfo: TEsMachineInfoSet; Ansi: Boolean = True; Win32AsWin64: TRegAccess = TRegAccess.raNormal): Integer;   {!!.05}
 function GenerateStringModifierPrim(const S : string) : Integer;
 function GenerateUniqueModifierPrim : Integer;
 function GenerateMachineModifierPrim : Integer;
@@ -717,8 +719,27 @@ end;
 {$REGION 'CreateMachineID'}
 
 {$REGION 'Win32 + Win64'}
+
+function IsWow64: Boolean;
+type
+  TIsWow64Process = function(Handle: Winapi.Windows.THandle; var Res: Winapi.Windows.BOOL): Winapi.Windows.BOOL; stdcall;
+var
+  IsWow64Result: Winapi.Windows.BOOL;
+  IsWow64Process: TIsWow64Process;
+begin
+  IsWow64Process := Winapi.Windows.GetProcAddress(Winapi.Windows.GetModuleHandle('kernel32'), 'IsWow64Process');
+  if Assigned(IsWow64Process) then
+  begin
+    if not IsWow64Process(Winapi.Windows.GetCurrentProcess, IsWow64Result) then
+      raise System.SysUtils.Exception.Create('IsWow64: bad process handle');
+    Result := IsWow64Result;
+  end
+  else
+    Result := False;
+end;
+
 {!!.05} {added}
-function CreateMachineID(MachineInfo: TEsMachineInfoSet; Ansi: Boolean = True; Win32AsWin64: Boolean = False): Integer;
+function CreateMachineID(MachineInfo: TEsMachineInfoSet; Ansi: Boolean = True; Win32AsWin64: TRegAccess = TRegAccess.raNormal): Integer;
 { Obtains information from:
     - Volume sizes (NOT free space)
     - Volume serial numbers
@@ -784,8 +805,18 @@ begin
   InitTMD(Context);
 
   Desired := KEY_QUERY_VALUE;
-  if Win32AsWin64 then
-    Desired := Desired or KEY_WOW64_32KEY;
+  case Win32AsWin64 of
+    ra32Like64:
+    begin
+      if IsWow64 then
+        Desired := Desired or KEY_WOW64_64KEY;
+    end;
+    ra64Like32:
+    begin
+      if not IsWow64 then
+        Desired := Desired or KEY_WOW64_32KEY;
+    end;
+  end;
 
   {include user specific information}
   if Ansi then
